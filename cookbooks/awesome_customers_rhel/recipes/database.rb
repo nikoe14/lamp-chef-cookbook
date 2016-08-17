@@ -1,9 +1,3 @@
-#
-# Cookbook Name:: awesome_customers_rhel
-# Recipe:: database
-#
-# Copyright (c) 2016 The Authors, All Rights Reserved.
-
 # Configure the MySQL client.
 mysql_client 'default' do
   action :create
@@ -27,9 +21,19 @@ mysql_database node['awesome_customers_rhel']['database']['dbname'] do
     :username => node['awesome_customers_rhel']['database']['root_username'],
     :password => node['awesome_customers_rhel']['database']['root_password']
   )
+  action :create
+end
+
+# Add a database user.
+mysql_database_user node['awesome_customers_rhel']['database']['admin_username'] do
+  connection(
+    :host => node['awesome_customers_rhel']['database']['host'],
+    :username => node['awesome_customers_rhel']['database']['root_username'],
+    :password => node['awesome_customers_rhel']['database']['root_password']
+  )
   password node['awesome_customers_rhel']['database']['admin_password']
   database_name node['awesome_customers_rhel']['database']['dbname']
-  host node['awesome_customers_rhel']['database']['dbname']
+  host node['awesome_customers_rhel']['database']['host']
   action [:create, :grant]
 end
 
@@ -49,5 +53,3 @@ execute "initialize #{node['awesome_customers_rhel']['database']['dbname']} data
   command "mysql -h #{node['awesome_customers_rhel']['database']['host']} -u #{node['awesome_customers_rhel']['database']['admin_username']} -p#{node['awesome_customers_rhel']['database']['admin_password']} -D #{node['awesome_customers_rhel']['database']['dbname']} < #{create_tables_script_path}"
   not_if  "mysql -h #{node['awesome_customers_rhel']['database']['host']} -u #{node['awesome_customers_rhel']['database']['admin_username']} -p#{node['awesome_customers_rhel']['database']['admin_password']} -D #{node['awesome_customers_rhel']['database']['dbname']} -e 'describe customers;'"
 end
-
-
